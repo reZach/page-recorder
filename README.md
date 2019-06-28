@@ -4,7 +4,7 @@
 # Installation
 1. Clone the repo 
 
-`git clone https://github.com/reZach/my-budget-connector-creator.git`
+`git clone https://github.com/reZach/page-recorder.git`
 
 2. Open up Chrome
 3. Navigate to **chrome://extensions/**
