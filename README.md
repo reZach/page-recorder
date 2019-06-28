@@ -1,4 +1,4 @@
-# My Budget Connector Creator Extension
+# Page Recorder Extension
 ![](./README%20images/Menu%20icon.png)
 
 # Installation
