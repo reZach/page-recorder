@@ -1,5 +1,5 @@
 chrome.runtime.onMessage.addListener(
-    function(request, sender, sendResponse){
+    function(request, sender, sendResponse){         
         try {
             var blob = new Blob([JSON.stringify(request)], {type: "application/json"});
             var url = URL.createObjectURL(blob);
@@ -19,7 +19,12 @@ chrome.runtime.onMessage.addListener(
             return true;
         }
         
-
         return true; // makes this async
     }
 );
+
+// Fired when the extension icon is clicked
+chrome.browserAction.onClicked.addListener(function(tab){
+    let data = {action: "SaveUserStepsToFile"};
+    chrome.tabs.sendMessage(tab.id, data);
+});

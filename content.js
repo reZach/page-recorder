@@ -1,13 +1,13 @@
 
-var findBestParent = function(event){
+let findBestParent = function(event){
     // Skip these tags,
     // as they usually don't hold good identifiers
-    var skip = [
+    let skip = [
         "path",
         "svg"
     ];
 
-    var cursor = event;
+    let cursor = event;
     while(cursor !== false){
                 
         if (skip.indexOf(cursor.tagName) >= 0){
@@ -30,12 +30,12 @@ var findBestParent = function(event){
     return cursor;
 }
 
-var createElementSelector = function(element){
-    var _tag = element.tagName;
-    var _id = element.id;
-    var _class = element.className;    
+let createElementSelector = function(element){
+    let _tag = element.tagName;
+    let _id = element.id;
+    let _class = element.className;    
     
-    var _query = `${_tag.toLowerCase()}`;
+    let _query = `${_tag.toLowerCase()}`;
     if (_id.length > 0){
         _query += `#${_id}`;
     }
@@ -45,25 +45,61 @@ var createElementSelector = function(element){
     return _query;
 }
 
-var buildMessage = function(element){
+let buildMessage = function(element){
     return {
         url: window.location.href,
         selector: element
     };
 }
 
+let addMessageToLocalStorage = function(message){
+    let existing = chrome.storage.local.get(["data"], function(result){        
+        if (typeof result["data"] === "undefined"){
+            result["data"] = [];
+        }
+
+        result["data"].push(message);
+        chrome.storage.local.set(result, function(result){
+            console.log("Saved to local storage");
+        });
+    });
+}
+
+let clearLocalStorage = function(){
+    chrome.storage.local.set({"data": []}, function(result){});
+}
 
 document.addEventListener("click", function(event){    
-    var bestParent = findBestParent(event);
+    let bestParent = findBestParent(event);
     if (bestParent === false){
         console.warn("Could not find parent for click!");
         return;
     }
 
-    var element = createElementSelector(bestParent);
+    let element = createElementSelector(bestParent);
     console.log(`${element}`);
 
-    chrome.runtime.sendMessage(buildMessage(element), function(response){        
-        console.log(response);
-    });
+    let message = buildMessage(element);
+    addMessageToLocalStorage(message);    
+});
+
+chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse){      
+    switch (msg.action){
+        case "ClearLocalStorage":
+            clearLocalStorage();
+            break;
+        case "SaveUserStepsToFile":
+            chrome.storage.local.get(["data"], function(result){
+                if (typeof result === "undefined" || result === null){
+                    return;
+                }
+        
+                chrome.runtime.sendMessage(result, function(response){                    
+                    clearLocalStorage();
+                });
+            });
+        break;
+        default:
+            break;
+    }
 });
