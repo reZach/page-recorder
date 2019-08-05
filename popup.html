@@ -4,12 +4,45 @@
 <head>        
     <title>Page Recorder</title>
     <script src="popup.js"></script>
+    <style>
+        .extensionmenu {
+            width:400px;
+            height:auto;
+        }
+        .middle {
+            text-align:center;
+        }
+        .left {
+            text-align:left;
+        }
+        .fleft {
+            float:left;
+            width:100%;
+            margin-bottom:10px;
+        }
+    </style>
 </head>
 
 <body>
-    <div class="js-status"></div>
-    <button class="js-clear">Clear</button>
-    <button class="js-save">Save</button>
+    <div class="extensionmenu">
+        <h1 class="middle">Page Recorder</h1>
+        <span class="middle js-status"></span>
+        <hr>
+        <div class="fleft">
+            <button class="js-clear">Clear</button> -
+            Resets recording
+        </div>
+        <div class="fleft">
+            <button class="js-save">Save</button> -
+            Saves recording file
+        </div>
+        <hr>
+        <h2 class="middle">My Budget connector generation</h2>
+        <div class="fleft">
+            <button class="js-transaction-area">None</button> - 
+            Transaction area (click to select)
+        </div>
+    </div>    
 </body>
 
 </html>

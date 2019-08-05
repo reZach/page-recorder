@@ -22,9 +22,3 @@ chrome.runtime.onMessage.addListener(
         return true; // makes this async
     }
 );
-
-// Fired when the extension icon is clicked
-chrome.browserAction.onClicked.addListener(function(tab){
-    let data = {action: "SaveUserStepsToFile"};
-    chrome.tabs.sendMessage(tab.id, data);
-});
