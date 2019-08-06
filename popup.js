@@ -13,6 +13,9 @@ document.addEventListener("DOMContentLoaded", function (event) {
     let updateStatus = function(status){
         document.querySelector(".js-status").innerHTML = `${status}`;
     }
+    let updateConnectorStatus = function(status){
+        document.querySelector(".js-connector-status").innerHTML = `${status}`;
+    }
 
     document.querySelector(".js-clear").addEventListener("click", function(event){
         fireAction("ClearLocalStorage", updateStatus("Reset page recording"));
@@ -22,6 +25,6 @@ document.addEventListener("DOMContentLoaded", function (event) {
     });
 
     document.querySelector(".js-transaction-area").addEventListener("click", function(event){
-        fireAction("SearchingForTransactionArea", null);
-    })
+        fireAction("SearchingForTransactionArea", updateConnectorStatus("Selecting transaction area"));
+    });
 });
