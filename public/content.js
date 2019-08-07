@@ -165,7 +165,14 @@ document.addEventListener("click", function(event){
         let message = buildMessage(selector);
         addMessageToLocalStorage(message);    
     } else {
-        persistentData.searchingForTransactionAreaActive = false;        
+        persistentData.searchingForTransactionAreaActive = false;
+        chrome.runtime.sendMessage({
+            msg: "something_completed", 
+            data: {
+                subject: "Loading",
+                content: "Just completed!"
+            }
+        });        
     }    
 });
 

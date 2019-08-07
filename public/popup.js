@@ -28,3 +28,12 @@ document.addEventListener("DOMContentLoaded", function (event) {
         fireAction("SearchingForTransactionArea", updateConnectorStatus("Selecting transaction area"));
     });
 });
+
+chrome.runtime.onMessage.addListener(function(request, sender, sendResponse){
+    switch(request.msg){        
+        default:
+            break;
+    }
+
+    console.log(request);
+});
