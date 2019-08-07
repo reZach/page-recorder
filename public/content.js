@@ -1,7 +1,12 @@
 let persistentData = {
     "lastTargetedElement": "",    
     "PRCount": 1,
-    "searchingForTransactionAreaActive": false
+    "searchingForTransactionAreaActive": true
+}
+
+
+let persistent = {
+    "recording": false
 }
 
 
@@ -133,6 +138,14 @@ let buildMessage = function(element){
     };
 }
 
+let sendMessage = function(message, callback){
+    chrome.runtime.sendMessage(message, function(response){
+        if (typeof callback === "function"){
+            callback(response);
+        }        
+    });
+}
+
 let addMessageToLocalStorage = function(message){
     chrome.storage.local.get(["data"], function(result){        
         if (typeof result["data"] === "undefined"){
@@ -160,6 +173,15 @@ document.addEventListener("click", function(event){
     }
 
     let selector = createBetterSelector(bestParent);
+
+    if (persistent.recording){
+        let message = buildMessage(selector);
+        addMessageToLocalStorage(message);
+        sendMessage({
+            action: "userAction",
+            data: message
+        });
+    }
 
     if (!persistentData.searchingForTransactionAreaActive){
         let message = buildMessage(selector);
@@ -209,8 +231,16 @@ document.addEventListener("mousemove", function(event){
     }
 });
 
-chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse){      
-    switch (msg.action){
+chrome.runtime.onMessage.addListener(function(message, sender, sendResponse){      
+    switch (message.action){
+        case "clear":
+            clearLocalStorage();
+            break;
+        case "record":
+            persistent.recording = true;
+            break;
+
+        
         case "ClearLocalStorage":
             clearLocalStorage();
             break;

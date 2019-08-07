@@ -29,11 +29,11 @@ document.addEventListener("DOMContentLoaded", function (event) {
     });
 });
 
-chrome.runtime.onMessage.addListener(function(request, sender, sendResponse){
-    switch(request.msg){        
+chrome.runtime.onMessage.addListener(function(message, sender, sendResponse){
+    switch(message.action){        
         default:
             break;
     }
 
-    console.log(request);
+    console.log(message);
 });

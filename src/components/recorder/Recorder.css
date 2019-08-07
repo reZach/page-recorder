@@ -1,0 +1,5 @@
+.recorder {
+    display:grid;
+    grid-column:2/6;
+    grid-row: 2/3;
+}
