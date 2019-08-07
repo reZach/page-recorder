@@ -7,9 +7,10 @@
 `git clone https://github.com/reZach/page-recorder.git`
 
 2. Open up Chrome
-3. Navigate to **chrome://extensions/**
-4. Flick on Developer mode (top right corner)
-5. Click **Load unpacked** (top left corner), select this folder that you cloned the repo into
+3. Run `npm run build`
+4. Navigate to **chrome://extensions/**
+5. Flick on Developer mode (top right corner)
+6. Click **Load unpacked** (top left corner), select the `build` folder that was created after doing step 3
 6. Enable the extension by toggling it. Click the refresh button to load the extension
 
 ![](./README%20images/Extension%20card.png)
