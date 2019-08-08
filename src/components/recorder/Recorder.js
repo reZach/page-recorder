@@ -14,6 +14,7 @@ class Recorder extends React.Component {
 
     this.clearRecording = this.clearRecording.bind(this);
     this.startRecording = this.startRecording.bind(this);
+    this.saveRecording = this.saveRecording.bind(this);
     this.chromeListener = this.chromeListener.bind(this);
   }
 
@@ -36,14 +37,27 @@ class Recorder extends React.Component {
     });
   }
 
+  saveRecording(event){
+    this.setState(state => ({
+      status: "Saved recording"
+    }));
+    sendToContentScript({
+      action: "save"
+    });
+  }
+
   chromeListener(event){
     chrome.runtime.onMessage.addListener(function(message, sender, sendResponse){
-        // switch(message.action){        
-        //     default:
-        //         break;
-        // }
+        switch(message.action){        
+          case "userAction":
+            console.log("last action: " + message.data);
+          break;
+          default:
+            break;
+        }
 
         console.log(message);
+        return true;
     });
   }
 
@@ -57,10 +71,12 @@ class Recorder extends React.Component {
     return (
       <div>
         <div>
-          <input type="button" value="Clear" onClick={this.clearRecording} /> - Resets recording
+          <input type="button" value="Clear" onClick={this.clearRecording} />
+          <input type="button" value="Record" onClick={this.startRecording} />
+          <input type="button" value="Save" onClick={this.saveRecording} />
         </div>
         <div>
-          <input type="button" value="Save" onClick={this.startRecording} /> - Saves recording file
+          
         </div>
       </div>
     );

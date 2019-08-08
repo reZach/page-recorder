@@ -181,25 +181,11 @@ document.addEventListener("click", function(event){
             action: "userAction",
             data: message
         });
-    }
-
-    if (!persistentData.searchingForTransactionAreaActive){
-        let message = buildMessage(selector);
-        addMessageToLocalStorage(message);    
-    } else {
-        persistentData.searchingForTransactionAreaActive = false;
-        chrome.runtime.sendMessage({
-            msg: "something_completed", 
-            data: {
-                subject: "Loading",
-                content: "Just completed!"
-            }
-        });        
-    }    
+    } 
 });
 
 document.addEventListener("mousemove", function(event){
-    if (!persistentData.searchingForTransactionAreaActive) return;
+    if (!persistent.recording) return;
 
     // Get hovered element
     event = event || window.event;
@@ -231,36 +217,34 @@ document.addEventListener("mousemove", function(event){
     }
 });
 
-chrome.runtime.onMessage.addListener(function(message, sender, sendResponse){      
+chrome.runtime.onMessage.addListener(async function(message, sender, sendResponse){
+    console.log(message);      
     switch (message.action){
         case "clear":
+            persistent.recording = false;
             clearLocalStorage();
             break;
         case "record":
             persistent.recording = true;
             break;
-
-        
-        case "ClearLocalStorage":
-            clearLocalStorage();
-            break;
-        case "SaveUserStepsToFile":
+        case "save":
             chrome.storage.local.get(["data"], function(result){
                 if (typeof result === "undefined" || result === null){
                     return;
                 }
         
-                chrome.runtime.sendMessage(result, function(response){
+                chrome.runtime.sendMessage({
+                    msg: "save", 
+                    data: result
+                }, function(response){
+                    persistent.recording = false;
                     clearLocalStorage();
                 });
             });
             break;
-        case "SearchingForTransactionArea":
-            if (!persistentData.searchingForTransactionAreaActive){
-                persistentData.searchingForTransactionAreaActive = true;
-            }
-            break;
         default:
             break;
     }
+
+    return true;
 });
