@@ -251,6 +251,7 @@ chrome.runtime.onMessage.addListener(async function(message, sender, sendRespons
                 }, function(response){
                     persistent.recording = false;
                     clearLocalStorage();
+                    clearLastTargetedElement();
                 });
             });
             break;
