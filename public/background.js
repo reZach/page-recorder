@@ -1,7 +1,8 @@
 chrome.runtime.onMessage.addListener(
     function(message, sender, sendResponse){
+        console.log("background");
         switch(message.action){
-            case "save":
+            case "saveBackground":
                 try {
                     var blob = new Blob([JSON.stringify(message.data)], {type: "application/json"});
                     var url = URL.createObjectURL(blob);
@@ -17,8 +18,6 @@ chrome.runtime.onMessage.addListener(
                     sendResponse({
                         success: false
                     });
-                } finally {
-                    return true;
                 }
             break;
             default:

@@ -15,10 +15,33 @@ class Recorder extends React.Component {
     this.clearRecording = this.clearRecording.bind(this);
     this.startRecording = this.startRecording.bind(this);
     this.saveRecording = this.saveRecording.bind(this);
-    this.chromeListener = this.chromeListener.bind(this);
   }
 
-  clearRecording(event){
+  componentDidMount() {
+    chrome.runtime.onMessage.addListener(function(
+      message,
+      sender,
+      sendResponse
+    ) {
+      switch (message.action) {
+        case "action":
+          console.log("last action: " + message.data);
+          break;
+        case "save":
+          sendToContentScript({
+            action: "save"
+          });
+          break;
+        default:
+          break;
+      }
+
+      console.log(message);
+      return true;
+    });
+  }
+
+  clearRecording(event) {
     this.setState(state => ({
       userActions: [],
       status: "Reset recording"
@@ -28,7 +51,7 @@ class Recorder extends React.Component {
     });
   }
 
-  startRecording(event){
+  startRecording(event) {
     this.setState(state => ({
       status: "Actively recording"
     }));
@@ -37,27 +60,12 @@ class Recorder extends React.Component {
     });
   }
 
-  saveRecording(event){
+  saveRecording(event) {
     this.setState(state => ({
       status: "Saved recording"
     }));
     sendToContentScript({
       action: "save"
-    });
-  }
-
-  chromeListener(event){
-    chrome.runtime.onMessage.addListener(function(message, sender, sendResponse){
-        switch(message.action){        
-          case "userAction":
-            console.log("last action: " + message.data);
-          break;
-          default:
-            break;
-        }
-
-        console.log(message);
-        return true;
     });
   }
 
@@ -75,9 +83,7 @@ class Recorder extends React.Component {
           <input type="button" value="Record" onClick={this.startRecording} />
           <input type="button" value="Save" onClick={this.saveRecording} />
         </div>
-        <div>
-          
-        </div>
+        <div />
       </div>
     );
   }
@@ -86,7 +92,7 @@ class Recorder extends React.Component {
     return (
       <div className="recorder">
         {this.renderStatus()}
-        {this.renderControls()}        
+        {this.renderControls()}
       </div>
     );
   }

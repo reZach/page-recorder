@@ -6,7 +6,8 @@ let persistentData = {
 
 
 let persistent = {
-    "recording": false
+    "recording": false,
+    "lastTargetedElement": "",
 }
 
 
@@ -51,7 +52,12 @@ let createBetterSelector = function(element){
     let originalElement = element;
     let originalSelector = generateElementSelector(element);    
     while (levels > 0){
-        selector = generateElementSelector(element);        
+        try {
+            selector = generateElementSelector(element);
+        } catch (e) {
+            return null;
+        }
+        
         if (document.querySelectorAll(selector).length !== 1){
             
             if (element.parentElement !== null){
@@ -163,6 +169,17 @@ let clearLocalStorage = function(){
     chrome.storage.local.set({"data": []}, function(result){});
 }
 
+let clearLastTargetedElement = function(){
+    // Reset old element
+    if (persistentData.lastTargetedElement.length > 0){
+        let element = document.querySelector(persistentData.lastTargetedElement);
+
+        if (element !== null){
+            element.style.opacity = null;
+            element.style.backgroundColor = null;
+        }
+    }
+}
 
 
 document.addEventListener("click", function(event){    
@@ -174,13 +191,13 @@ document.addEventListener("click", function(event){
 
     let selector = createBetterSelector(bestParent);
 
-    if (persistent.recording){
+    if (selector !== null && persistent.recording){
         let message = buildMessage(selector);
         addMessageToLocalStorage(message);
-        sendMessage({
-            action: "userAction",
-            data: message
-        });
+        // sendMessage({
+        //     action: "action",
+        //     data: message
+        // });
     } 
 });
 
@@ -196,18 +213,12 @@ document.addEventListener("mousemove", function(event){
 
     // Get better, targeted elements if we can
     let selector = createBetterSelector(hoveredElement);
-    console.log(`${selector} - "${getElementTextContent(hoveredElement)}"`);
+    //console.log(`${selector} - "${getElementTextContent(hoveredElement)}"`);
 
-    if (selector !== persistentData.lastTargetedElement){
+    if (selector !== null &&
+        selector !== persistentData.lastTargetedElement){
         // Reset old element
-        if (persistentData.lastTargetedElement.length > 0){
-            let element = document.querySelector(persistentData.lastTargetedElement);
-    
-            if (element !== null){
-                element.style.opacity = null;
-                element.style.backgroundColor = null;
-            }
-        }
+        clearLastTargetedElement();
             
         // Style element
         persistentData.lastTargetedElement = selector;
@@ -223,6 +234,7 @@ chrome.runtime.onMessage.addListener(async function(message, sender, sendRespons
         case "clear":
             persistent.recording = false;
             clearLocalStorage();
+            clearLastTargetedElement();
             break;
         case "record":
             persistent.recording = true;
@@ -234,7 +246,7 @@ chrome.runtime.onMessage.addListener(async function(message, sender, sendRespons
                 }
         
                 chrome.runtime.sendMessage({
-                    msg: "save", 
+                    action: "saveBackground", 
                     data: result
                 }, function(response){
                     persistent.recording = false;
