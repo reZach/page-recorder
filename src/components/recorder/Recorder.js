@@ -24,21 +24,26 @@ class Recorder extends React.Component {
       sendResponse
     ) {
       switch (message.action) {
-        case "action":
-          console.log("last action: " + message.data);
-          break;
         case "save":
           sendToContentScript({
             action: "save"
           });
           break;
+        case "lastActionPopup":
+          console.log("lastActionPopup");
+          console.log(message.data);
         default:
           break;
       }
 
-      console.log(message);
+      console.log(`received ${JSON.stringify(message)}`);
+
+      sendResponse({});
       return true;
     });
+
+    // Get last user action
+    sendToContentScript("lastAction");
   }
 
   clearRecording(event) {
@@ -46,27 +51,21 @@ class Recorder extends React.Component {
       userActions: [],
       status: "Reset recording"
     }));
-    sendToContentScript({
-      action: "clear"
-    });
+    sendToContentScript("clear");
   }
 
   startRecording(event) {
     this.setState(state => ({
       status: "Actively recording"
     }));
-    sendToContentScript({
-      action: "record"
-    });
+    sendToContentScript("record");
   }
 
   saveRecording(event) {
     this.setState(state => ({
       status: "Saved recording"
     }));
-    sendToContentScript({
-      action: "save"
-    });
+    sendToContentScript("save");
   }
 
   renderStatus() {
@@ -93,6 +92,7 @@ class Recorder extends React.Component {
       <div className="recorder">
         {this.renderStatus()}
         {this.renderControls()}
+        
       </div>
     );
   }

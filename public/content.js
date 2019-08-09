@@ -1,11 +1,7 @@
-let persistentData = {
-    "lastTargetedElement": "",    
-    "PRCount": 1,
-    "searchingForTransactionAreaActive": true
-}
 
 
 let persistent = {
+    "PRCount": 1,
     "recording": false,
     "lastTargetedElement": "",
 }
@@ -95,8 +91,8 @@ let createBetterSelector = function(element){
     if (originalElement.getAttribute("data-pr") !== null){
         console.error(`Element ${originalSelector} already has a 'data-pr' attribute, cannot add attribute!`);
     } else {
-        originalElement.setAttribute("data-pr", persistentData.PRCount);
-        persistentData.PRCount++;
+        originalElement.setAttribute("data-pr", persistent.PRCount);
+        persistent.PRCount++;
     }
     
     return generateElementSelector(originalElement);
@@ -137,42 +133,20 @@ let getElementTextContent = function(element){
     return element.innerText || element.textContent;
 }
 
-let buildMessage = function(element){
+let buildUserAction = function(element){
     return {
         url: window.location.href,
         selector: element
     };
 }
 
-let sendMessage = function(message, callback){
-    chrome.runtime.sendMessage(message, function(response){
-        if (typeof callback === "function"){
-            callback(response);
-        }        
-    });
-}
 
-let addMessageToLocalStorage = function(message){
-    chrome.storage.local.get(["data"], function(result){        
-        if (typeof result["data"] === "undefined"){
-            result["data"] = [];
-        }
 
-        result["data"].push(message);
-        chrome.storage.local.set(result, function(result){
-            console.log("Saved to local storage");
-        });
-    });
-}
-
-let clearLocalStorage = function(){
-    chrome.storage.local.set({"data": []}, function(result){});
-}
 
 let clearLastTargetedElement = function(){
     // Reset old element
-    if (persistentData.lastTargetedElement.length > 0){
-        let element = document.querySelector(persistentData.lastTargetedElement);
+    if (persistent.lastTargetedElement.length > 0){
+        let element = document.querySelector(persistent.lastTargetedElement);
 
         if (element !== null){
             element.style.opacity = null;
@@ -192,12 +166,23 @@ document.addEventListener("click", function(event){
     let selector = createBetterSelector(bestParent);
 
     if (selector !== null && persistent.recording){
-        let message = buildMessage(selector);
-        addMessageToLocalStorage(message);
-        // sendMessage({
-        //     action: "action",
-        //     data: message
-        // });
+        let userAction = buildUserAction(selector);
+        
+        let storage = Localstorage.get("userActions", function(response){
+            if (Object.keys(response).length === 0){
+                response = [userAction];
+                Localstorage.set({"userActions": response});
+            } else {
+                response["userActions"].push(userAction);
+                Localstorage.set(response);
+            }
+            
+            // Save to localstorage so popup can use this
+            Localstorage.set({"lastAction": userAction}, function(response){
+                Messages.send("lastAction", userAction);
+            });
+            console.log(`Sent lastAction: ${userAction}`);
+        });
     } 
 });
 
@@ -216,48 +201,54 @@ document.addEventListener("mousemove", function(event){
     //console.log(`${selector} - "${getElementTextContent(hoveredElement)}"`);
 
     if (selector !== null &&
-        selector !== persistentData.lastTargetedElement){
+        selector !== persistent.lastTargetedElement){
         // Reset old element
         clearLastTargetedElement();
             
         // Style element
-        persistentData.lastTargetedElement = selector;
+        persistent.lastTargetedElement = selector;
         
         hoveredElement.style.opacity = "0.5";
         hoveredElement.style.backgroundColor = "#c0cbef"; 
     }
 });
 
-chrome.runtime.onMessage.addListener(async function(message, sender, sendResponse){
-    console.log(message);      
+chrome.runtime.onMessage.addListener(function(message, sender, sendResponse){
+    clearLastTargetedElement();
+
     switch (message.action){
         case "clear":
             persistent.recording = false;
-            clearLocalStorage();
-            clearLastTargetedElement();
+            Localstorage.remove("userActions");
             break;
         case "record":
             persistent.recording = true;
             break;
         case "save":
-            chrome.storage.local.get(["data"], function(result){
-                if (typeof result === "undefined" || result === null){
-                    return;
-                }
-        
-                chrome.runtime.sendMessage({
-                    action: "saveBackground", 
-                    data: result
-                }, function(response){
+            Localstorage.get("userActions", function(response){
+                if (Object.keys(response).length === 0) return;
+
+                // Send message to background thread, 
+                // as only the background thread has access to chrome downloads
+                Messages.send("saveBackground", response["userActions"], function(response){
                     persistent.recording = false;
-                    clearLocalStorage();
-                    clearLastTargetedElement();
+                    Localstorage.remove("userActions");
                 });
             });
             break;
+        case "lastAction":
+            Localstorage.get("lastAction", function(response){
+                let toSend = {};
+                if (Object.keys(response).length !== 0){
+                    toSend = response["lastAction"];
+                }
+
+                Messages.send("lastActionPopup", toSend);
+            });
         default:
             break;
     }
 
+    sendResponse({});
     return true;
 });
