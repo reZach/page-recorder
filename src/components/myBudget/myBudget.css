@@ -1,0 +1,12 @@
+.my-budget {
+    grid-column: 1/7;
+}
+
+.data-point-grid {
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.empty-cell {
+    background-color: gray;
+}

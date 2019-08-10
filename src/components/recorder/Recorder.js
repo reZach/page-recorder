@@ -32,6 +32,7 @@ class Recorder extends React.Component {
         case "lastActionPopup":
           console.log("lastActionPopup");
           console.log(message.data);
+          break;
         default:
           break;
       }
