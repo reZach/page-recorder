@@ -7,6 +7,10 @@
     grid-template-columns: repeat(3, 1fr);
 }
 
+.data-point-grid > div {
+    border:1px solid white;
+}
+
 .empty-cell {
     background-color: gray;
 }

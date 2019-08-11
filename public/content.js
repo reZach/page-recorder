@@ -119,6 +119,7 @@ let generateElementSelector = function(element){
     }
     if (_class.length > 0){
         _class = _class.trim().replace(/\s{1,}/g, " ");
+        _class = _class.replace(".pr-hover", "");
         _query += `.${_class.replace(new RegExp(" ", "g"), ".")}`;
     }
     if (_pr !== null && _pr.length > 0){
@@ -141,12 +142,10 @@ let getElementTextContent = function(element){
 let buildUserAction = function(element){
     return {
         url: window.location.href,
-        selector: element
+        selector: element,
+        textContent: getElementTextContent(document.querySelector(element))
     };
 }
-
-
-
 
 let clearLastTargetedElement = function(){
     // Reset old element
@@ -154,16 +153,30 @@ let clearLastTargetedElement = function(){
         let element = document.querySelector(persistent.lastTargetedElement);
 
         if (element !== null){
-            element.style.opacity = null;
-            element.style.backgroundColor = null;
+            element.classList.remove("pr-hover");
+            // element.style.opacity = null;
+            // element.style.backgroundColor = null;
         }
     }
 }
 
-// Only for testing
-window.addEventListener("DOMContentLoaded", function(event){
-    Localstorage.clear();
-});
+let sendAllDataPointsToPopup = function(){
+    Localstorage.get(null, function(response){
+        console.log(`dataPointAll response ${JSON.stringify(response)}`);
+        let toSend = {};
+        let keys = Object.keys(response);
+        for (var i = 0; i < keys.length; i++){
+            if (keys[i].indexOf("dataPoint") === 0){
+                toSend[`${keys[i]}`] = response[keys[i]];
+            }
+        };
+
+        if (Object.keys(toSend).length > 0){
+            Messages.send("dataPointAll", toSend);
+        }
+    });
+}
+
 
 document.addEventListener("click", function(event){    
     let bestParent = eventFindBestParent(event);
@@ -205,9 +218,13 @@ document.addEventListener("click", function(event){
                 response[`${dataPointKey}`] = userAction;
                 Localstorage.set(response);
             }
-            
+
+            // Send message to popup
+            sendAllDataPointsToPopup();
+
             // Reset
             persistent.dataPoint = "";
+            clearLastTargetedElement();
         });
     }
 });
@@ -235,14 +252,16 @@ document.addEventListener("mousemove", function(event){
         // Style element
         persistent.lastTargetedElement = selector;
         
-        hoveredElement.style.opacity = "0.5";
-        hoveredElement.style.backgroundColor = "#c0cbef"; 
+        hoveredElement.classList.add("pr-hover");
+        // hoveredElement.style.opacity = "0.5";
+        // hoveredElement.style.backgroundColor = "#c0cbef"; 
     }
 });
 
 chrome.runtime.onMessage.addListener(function(message, sender, sendResponse){
     clearLastTargetedElement();
-    console.log(message);
+
+    console.log(`content.js addListener: ${JSON.stringify(message)}`);
     switch (message.action){
         case "clear":
             persistent.recording = false;
@@ -274,18 +293,7 @@ chrome.runtime.onMessage.addListener(function(message, sender, sendResponse){
                 Messages.send("lastActionPopup", toSend);
             });
         case "dataPointAll":
-            Localstorage.get(null, function(response){
-                console.log(`dataPointAll response ${JSON.stringify(response)}`);
-                let toSend = {};
-                let keys = Object.keys(response);
-                for (var i = 0; i < keys.length; i++){
-                    if (keys[i].indexOf("dataPoint") === 0){
-                        toSend[`${keys[i]}`] = response[keys[i]];
-                    }
-                };
-
-                Messages.send("dataPointAll", toSend);
-            });
+            sendAllDataPointsToPopup();
             break;
         case "dataPoint_date":
             persistent.dataPoint = "date";
@@ -305,7 +313,7 @@ chrome.runtime.onMessage.addListener(function(message, sender, sendResponse){
         default:
             break;
     }
-
+    
     sendResponse({});
     return true;
 });

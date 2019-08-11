@@ -16,7 +16,8 @@
             "content.js",
             "utils/localstorage.js",
             "utils/messages.js"
-        ]
+        ],
+        "css": ["extensionstyles.css"]
     }],
     "permissions": [
         "storage",
