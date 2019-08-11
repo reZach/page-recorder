@@ -18,8 +18,9 @@
 # Usage
 1. Navigate to any webpage
 2. Click on the extension's icon and click "Clear" to clear any previously selected elements
-3. Begin navigating through any website
-4. When you are finished navigating pages on the website, click the extension's icon again and click "Save" to download a file of the user-clicked elements
+4. Click "Record" to begin recording user clicks
+5. Begin navigating through any website
+6. When you are finished navigating pages on the website, click the "Save" button to download a file of the user-clicked elements
 
 # Development
 1. Make changes to the repo
