@@ -44,9 +44,9 @@ let Localstorage = (function(){
      */
     let privateClear = function(callback){
         if (callback !== null && typeof callback === "function"){
-            chrome.storage.clear(callback);
+            chrome.storage.local.clear(callback);
         } else {
-            chrome.storage.clear();
+            chrome.storage.local.clear();
         }    
     };
 

@@ -118,8 +118,8 @@ let generateElementSelector = function(element){
         _query += `[id='${_id}']`;
     }
     if (_class.length > 0){
-        _class = _class.trim().replace(/\s{1,}/g, " ");
-        _class = _class.replace(".pr-hover", "");
+        _class = _class.replace("pr-hover", "");
+        _class = _class.trim().replace(/\s{1,}/g, " ");        
         _query += `.${_class.replace(new RegExp(" ", "g"), ".")}`;
     }
     if (_pr !== null && _pr.length > 0){
@@ -193,7 +193,8 @@ document.addEventListener("click", function(event){
         
         let storage = Localstorage.get("userActions", function(response){
             if (Object.keys(response).length === 0){                
-                Localstorage.set({"userActions": userAction});
+                response = [userAction];
+                Localstorage.set({"userActions": response});
             } else {
                 response["userActions"].push(userAction);
                 Localstorage.set(response);
@@ -267,6 +268,7 @@ chrome.runtime.onMessage.addListener(function(message, sender, sendResponse){
             persistent.recording = false;
             Localstorage.remove("userActions");
             Localstorage.remove("dataPointKey");
+            Localstorage.clear(); // only for debugging
             break;
         case "record":
             persistent.recording = true;
