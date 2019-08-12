@@ -178,6 +178,7 @@ let sendAllDataPointsToPopup = function(){
 }
 
 
+
 document.addEventListener("click", function(event){    
     let bestParent = eventFindBestParent(event);
     if (bestParent === false){
