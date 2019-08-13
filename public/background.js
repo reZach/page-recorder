@@ -2,13 +2,14 @@ chrome.runtime.onMessage.addListener(
     function(message, sender, sendResponse){
         console.log("background");
         switch(message.action){
-            case "saveBackground":
+            case "generateConnectorPopup":
                 try {
-                    var blob = new Blob([JSON.stringify(message.data)], {type: "application/json"});
+                    var blob = new Blob([message.data], {type: "application/javascript"});
                     var url = URL.createObjectURL(blob);
                     
                     chrome.downloads.download({
-                        url: url
+                        url: url,
+                        filename: "mybudgetconnector.js"
                     });
             
                     sendResponse({
@@ -20,6 +21,7 @@ chrome.runtime.onMessage.addListener(
                     });
                 }
             break;
+            
             default:
                 break;
         }        

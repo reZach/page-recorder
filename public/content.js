@@ -119,8 +119,10 @@ let generateElementSelector = function(element){
     }
     if (_class.length > 0){
         _class = _class.replace("pr-hover", "");
-        _class = _class.trim().replace(/\s{1,}/g, " ");        
-        _query += `.${_class.replace(new RegExp(" ", "g"), ".")}`;
+        if (_class.length > 0){
+            _class = _class.trim().replace(/\s{1,}/g, " ");        
+            _query += `.${_class.replace(new RegExp(" ", "g"), ".")}`;
+        }        
     }
     if (_pr !== null && _pr.length > 0){
         _query += `[data-pr="${_pr}"]`;
@@ -177,7 +179,15 @@ let sendAllDataPointsToPopup = function(){
     });
 }
 
-
+window.addEventListener("load", function(event){
+    Localstorage.get("userActions", function(response){
+        console.error(response);
+        let toSend = {};
+        if (Object.keys(response).length !== 0){
+            persistent.recording = true;
+        }
+    });
+});
 
 document.addEventListener("click", function(event){    
     let bestParent = eventFindBestParent(event);
@@ -295,6 +305,17 @@ chrome.runtime.onMessage.addListener(function(message, sender, sendResponse){
 
                 Messages.send("lastActionPopup", toSend);
             });
+            break;
+        case "userActions":
+            Localstorage.get("userActions", function(response){
+                let toSend = {};
+                if (Object.keys(response).length !== 0){
+                    toSend = response["userActions"];
+                }
+
+                Messages.send("userActions", toSend);
+            });
+            break;
         case "dataPointAll":
             sendAllDataPointsToPopup();
             break;
@@ -312,6 +333,9 @@ chrome.runtime.onMessage.addListener(function(message, sender, sendResponse){
             break;
         case "dataPoint_note":
             persistent.dataPoint = "note";
+            break;
+        case "generateConnector":
+            Messages.send("generateConnectorPopup", message.data);
             break;
         default:
             break;
